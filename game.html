@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>命運輪盤：安史之亂歷史重演</title>
+    <style>
+        :root {
+            --bg-color: #f4ebd9; 
+            --text-color: #2b1d15;
+            --primary-color: #900c3f; 
+            --secondary-color: #c7a972; 
+            --border-color: #5c4033;
+        }
+
+        body {
+            font-family: 'PMingLiU', 'MingLiU', 'STKaiti', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: linear-gradient(rgba(244, 235, 217, 0.9), rgba(244, 235, 217, 0.9)), url('https://www.transparenttextures.com/patterns/rice-paper-2.png');
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 30px;
+            border: 3px double var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        h2 {
+            color: var(--border-color);
+            text-align: center;
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .hidden { display: none !important; }
+
+        #player-info {
+            background-color: var(--border-color);
+            color: var(--bg-color);
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .scenario-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            min-height: 100px;
+            text-align: justify;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        button.choice-btn {
+            background-color: white;
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        button.choice-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            border: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        .btn-action {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-action:hover { background-color: #60082a; }
+
+        .outcome-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: left;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .progress {
+            text-align: right;
+            font-size: 1rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .hist-note {
+            background: rgba(199, 169, 114, 0.25);
+            padding: 15px;
+            font-size: 1.1rem;
+            border-left: 5px solid var(--primary-color);
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- 開場畫面 -->
+    <div id="start-screen">
+        <h1>命運輪盤</h1>
+        <h2>安史之亂歷史重演</h2>
+        <p style="font-size:1.1rem; line-height:1.6; text-align:center;">盛唐危機四伏。朝政腐敗、將相不和、外重內輕... 你的選擇，將決定大唐的命運！</p>
+        <input type="text" id="player-input" placeholder="請輸入你的姓名..." autocomplete="off">
+        <button class="btn-action" onclick="startGame()">進入大唐</button>
+    </div>
+
+    <!-- 遊戲畫面 -->
+    <div id="game-screen" class="hidden">
+        <div class="progress" id="progress-text">場景 1 / 10</div>
+        <div id="player-info">
+            <span id="display-name">姓名：</span>
+            <span id="display-role">官職：</span>
+        </div>
+        <div id="scenario-content" class="scenario-text">
+            <!-- 情境文字 -->
+        </div>
+        <div id="choices-container" class="choices">
+            <!-- 選項 -->
+        </div>
+    </div>
+
+    <!-- 結算畫面 -->
+    <div id="game-over-screen" class="hidden">
+        <h1 id="result-title">結局</h1>
+        <div id="outcome-message" class="outcome-text"></div>
+        <div id="historical-note" class="hist-note"></div>
+        <button class="btn-action" onclick="resetGame()">重新推演歷史</button>
+    </div>
+</div>
+
+<script>
+    // 解決Bug：身分改為「朝廷官職」，不再與具體歷史人物衝突
+    const roles = ["朝廷重臣", "兵部尚書", "御史大夫", "太子太保", "長安守將"];
+    
+    // 題庫設計 (極簡化文字，固定 A/B 兩個選項)
+    const scenarios = [
+        {
+            title: "1. 玄宗怠政",
+            text: "國家太平，唐玄宗沉迷享樂，不上早朝。作為官員，你認為應該：",
+            choices: [
+                { text: "A. 勸皇帝以國事為重，重新勤政。", isCorrect: true },
+                { text: "B. 投其所好，幫皇帝擴建華清宮，讓他繼續享樂。", isCorrect: false, failMsg: "你縱容皇帝驕奢淫逸！朝政荒廢，埋下危機。", histNote: "【人為因素：唐玄宗】晚年玄宗驕奢淫逸，不思朝政，使國家由安轉危，埋下安史之亂的伏線。" }
+            ]
+        },
+        {
+            title: "2. 李林甫專權",
+            text: "皇帝想選新宰相。李林甫口蜜腹劍，很會討好皇帝；張九齡則正直敢言。你支持誰？",
+            choices: [
+                { text: "A. 支持張九齡，讓朝廷保持言路暢通。", isCorrect: true },
+                { text: "B. 支持李林甫，因為他辦事圓滑，深得皇帝歡心。", isCorrect: false, failMsg: "你誤聽奸言！李林甫拜相後排斥異己，朝政徹底敗壞！", histNote: "【人為因素：李林甫】李林甫蒙蔽天子耳目，取消諫官制度，使朝廷言路蔽塞，朝野噤若寒蟬。" }
+            ]
+        },
+        {
+            title: "3. 兵制危機",
+            text: "承平日久，中央「府兵制」崩潰，長安防守空虛。面對國防危機，你提議：",
+            choices: [
+                { text: "A. 花錢招募士兵（募兵制），並把精銳全派去邊疆防守。", isCorrect: false, failMsg: "你導致了「外重內輕」！長安毫無防備，叛軍一到便土崩瓦解！", histNote: "【制度因素：兵制與外重內輕】府兵制廢弛後改行募兵，但軍隊多集中在邊疆。安史之亂前，京師只有12萬缺乏訓練的禁軍，安祿山見狀便有機可乘。" },
+                { text: "B. 重新整頓土地，恢復府兵制，加強長安中央軍的訓練。", isCorrect: true }
+            ]
+        },
+        {
+            title: "4. 節度使大權",
+            text: "為防禦外敵，朝廷在邊疆設立「十大兵鎮」。該如何給予節度使權力？",
+            choices: [
+                { text: "A. 嚴格限制權力，軍權與財政分開，將領必須定期調防。", isCorrect: true },
+                { text: "B. 給予行政、財政及軍事大權，讓他們自行招兵買馬。", isCorrect: false, failMsg: "你犯了致命錯誤！節度使大權獨攬，擁兵自重，藩鎮割據之勢已成！", histNote: "【制度因素：十大兵鎮】唐室打破「不久任、不遙領、不兼統」原則，給予節度使軍政財大權。十大兵鎮共擁兵49萬，遠超中央。" }
+            ]
+        },
+        {
+            title: "5. 重用胡將",
+            text: "宰相李林甫怕漢人將領立功搶走他的相位，提議「胡人勇猛且沒有黨羽，應多用胡人為將」。",
+            choices: [
+                { text: "A. 贊成！大量任用胡將，把邊疆軍權交給他們。", isCorrect: false, failMsg: "你中了李林甫的私心毒計！大量胡將（如安祿山）掌握重兵，非我族類，其心必異！", histNote: "【人為因素：私心以胡代漢】李林甫為保相位，以「絕出將入相」為由重用胡將。導致安祿山等胡人坐大，大唐軍權旁落。" },
+                { text: "B. 反對！指出胡將未必忠心，應繼續任用漢人將領。", isCorrect: true }
+            ]
+        },
+        {
+            title: "6. 安祿山坐大",
+            text: "胡將安祿山很會討好皇帝，皇帝打算讓他一人兼任平盧、范陽、河東「三鎮節度使」。",
+            choices: [
+                { text: "A. 堅決反對！這違反了制度，他兵力太多會威脅中央。", isCorrect: true },
+                { text: "B. 贊成！安祿山是「大唐長城」，讓他一人管三鎮更有效率。", isCorrect: false, failMsg: "你養虎為患！安祿山一人掌握18萬精銳兵力，造反只是時間問題！", histNote: "【人為因素：養虎為患】唐室任由安祿山身兼三鎮節度使。安祿山早有異心，藉此蓄養胡兵，最終發動叛亂。" }
+            ]
+        },
+        {
+            title: "7. 楊國忠上位",
+            text: "楊貴妃的堂兄楊國忠靠關係成了宰相。但他只會貪污斂財，沒有政治才能。",
+            choices: [
+                { text: "A. 聯結朝中大臣，向皇帝揭發楊國忠的腐敗。", isCorrect: true },
+                { text: "B. 討好楊國忠，對他處理的朝政全部說「好」。", isCorrect: false, failMsg: "你助紂為虐！楊國忠治下朝政日益腐敗，令安祿山看出朝廷外強中乾！", histNote: "【人為因素：楊國忠】楊國忠靠楊貴妃上位，無德無能。他的統治令朝政腐敗，言路阻塞，是促使安史之亂爆發的導火線之一。" }
+            ]
+        },
+        {
+            title: "8. 激發叛變",
+            text: "楊國忠與安祿山不和。為除掉安祿山，楊國忠不斷派人搜查他在京城的府邸，步步進逼。",
+            choices: [
+                { text: "A. 支持楊國忠，立刻派兵捉拿安祿山的手下，逼他造反。", isCorrect: false, failMsg: "你打草驚蛇！安祿山見勢不妙，提前以「清君側」為名起兵造反！", histNote: "【人為因素：激發叛變】楊國忠步步進逼，刻意加害安祿山的心腹。安祿山乘朝廷不備，以「討伐楊國忠（清君側）」為名發動叛亂。" },
+                { text: "B. 阻止楊國忠盲目挑釁，暗中加強長安防禦。", isCorrect: true }
+            ]
+        },
+        {
+            title: "9. 瞎指揮與馬嵬兵變",
+            text: "安祿山造反，逼近長安門戶「潼關」。唐軍將領正堅守潼關，楊國忠卻慫恿皇帝，逼迫將領出城迎戰。",
+            choices: [
+                { text: "A. 聽信讒言，下令唐軍出關與叛軍決戰。", isCorrect: false, failMsg: "你犯了軍事大忌！唐軍大敗，潼關失守，長安門戶大開！", histNote: "【軍事失誤與馬嵬驛之變】唐玄宗聽信楊國忠讒言，強令軍隊出擊，導致潼關失守。玄宗逃亡四川，途中發生馬嵬兵變，楊國忠被殺，楊貴妃被賜死。" },
+                { text: "B. 信任前線將領，堅守潼關，等待各地援軍。", isCorrect: true }
+            ]
+        },
+        {
+            title: "10. 平亂與後患",
+            text: "長安失守，大唐危在旦夕。為了盡快收復長安，你決定：",
+            choices: [
+                { text: "A. 向西北的回紇借兵，雖然要給予大量賞賜，但能迅速收復京城。", isCorrect: true },
+                { text: "B. 為了求快，直接把土地封給安祿山手下的叛將，只要他們投降就行。", isCorrect: false, failMsg: "你留下了無窮後患！這些叛將成為了日後更可怕的「河北三鎮」，藩鎮割據之禍終結了大唐！", histNote: "【安史之亂的影響：藩鎮割據】代宗時為求速平亂，採取「姑息政策」，保留了叛將的土地和兵力，造成「河北三鎮」割據。大唐此後陷入百年的藩鎮割據，走向滅亡。" }
+            ]
+        }
+    ];
+
+    let currentScenarioIndex = 0;
+    let playerName = "";
+    let playerRole = "";
+
+    function startGame() {
+        const nameInput = document.getElementById('player-input').value.trim();
+        if (!nameInput) {
+            alert("請輸入姓名！");
+            return;
+        }
+
+        playerName = nameInput;
+        playerRole = roles[Math.floor(Math.random() * roles.length)];
+        currentScenarioIndex = 0;
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+
+        document.getElementById('display-name').innerText = "姓名：" + playerName;
+        document.getElementById('display-role').innerText = "官職：" + playerRole;
+
+        loadScenario();
+    }
+
+    function loadScenario() {
+        const scenario = scenarios[currentScenarioIndex];
+        const contentDiv = document.getElementById('scenario-content');
+        const choicesDiv = document.getElementById('choices-container');
+        
+        document.getElementById('progress-text').innerText = `命運抉擇 ${currentScenarioIndex + 1} / 10`;
+        choicesDiv.innerHTML = '';
+
+        contentDiv.innerHTML = `<h2>【 ${scenario.title} 】</h2>
+                                <p><strong>${playerName} 大人</strong>，${scenario.text}</p>`;
+
+        // 按鈕生成 (固定A和B，不再打亂順序，方便課堂提問)
+        scenario.choices.forEach((choice) => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = choice.text;
+            btn.onclick = () => handleChoice(choice);
+            choicesDiv.appendChild(btn);
+        });
+    }
+
+    function handleChoice(choice) {
+        if (choice.isCorrect) {
+            currentScenarioIndex++;
+            if (currentScenarioIndex < scenarios.length) {
+                loadScenario();
+            } else {
+                showGameOver(true, "【改變歷史，大唐復興】\n\n你憑藉卓越的政治智慧，成功避開了人為與制度的重重陷阱！大唐免於戰火摧殘，盛世得以延續！", "【歷史總結】\n安史之亂的爆發並非偶然。唐玄宗怠政、李林甫與楊國忠專權（人為因素），加上府兵制崩潰、外重內輕（制度因素），共同釀成了這場災難。");
+            }
+        } else {
+            showGameOver(false, "【決策錯誤，天下大亂】\n" + choice.failMsg, choice.histNote + "\n\n【戰爭殘酷】安史之亂長達八年，北方經濟受到嚴重破壞，人口銳減，大唐從此由盛轉衰。");
+        }
+    }
+
+    function showGameOver(isWin, msg, note) {
+        document.getElementById('game-screen').classList.add('hidden');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        gameOverScreen.classList.remove('hidden');
+
+        const title = document.getElementById('result-title');
+        title.innerText = isWin ? "📜 盛世重臨" : "🔥 天下大亂";
+        title.style.color = isWin ? "#2e8b57" : "var(--primary-color)";
+
+        document.getElementById('outcome-message').innerHTML = msg.replace(/\n/g, '<br>');
+        document.getElementById('historical-note').innerHTML = note.replace(/\n/g, '<br>');
+    }
+
+    function resetGame() {
+        document.getElementById('player-input').value = "";
+        document.getElementById('game-over-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
